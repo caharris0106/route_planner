@@ -1,26 +1,113 @@
 <!DOCTYPE html>
-
-{% extends 'layout.html' %}
-
-{% block body %}
-
+<html>
 <body>
 
 <h1>My First Google Map</h1>
 
+<div id="show_array"></div>
+<div id='show'></div>
+
+<div class = "col-lg-12">
+    <form  method="post">
+      <table id="addrTable">
+        <tr>
+          <th>Address</th>
+        </tr>
+
+        <tr>
+          <td>
+            <input type="text" id="address" placeholder="Address" value="Boca Raton">
+          </td>
+        </tr>
+
+      </table>
+        <input class="btn" type="button" id='submit' value="Geocode">
+        <input class="btn" type="button" value="Add a Row" id='addrow'>
+        <input class="btn" type="button" onclick="addrArrayMaker()" value="GET ARRAY" id='makeArray'>
+    </form>
+</div>
+
 <div id="googleMap" style="width:100%;height:400px;"></div>
 
 <script>
-function myMap() {
-var mapProp= {
-    center:new google.maps.LatLng(51.508742,-0.120850),
-    zoom:5,
-};
-var map=new google.maps.Map(document.getElementById("googleMap"),mapProp);
-}
+
+  // Adds a row to the addrTable
+  var table = document.getElementById('addrTable');
+  document.getElementById('addrow').addEventListener('click', function() {
+    addRow(table)
+  });
+
+  function addRow(table_to_add) {
+    var row = document.createElement("TR");
+    var cell = document.createElement("TD");
+    var input = document.createElement("INPUT")
+    input.setAttribute("type", "text");
+    input.setAttribute("placeholder", "Address");
+
+    // row.innerHTML = "<input type='text'>";
+    cell.appendChild(input);
+    row.appendChild(cell);
+    table_to_add.appendChild(row);
+
+    // document.getElementById('show').innerHTML = row;
+  }
+
+  document.getElementById('makeArray').addEventListener('click', function() {
+    addrArrayMaker(table);
+  });
+
+  function addrArrayMaker(table) {
+    // var table = document.getElementById('addrTable');
+    var addrArray = [document.getElementById('address').value];
+    for (var i = 2, row; row=table.rows[i]; i++) {
+      for (var j = 0, col; col=row.cells[j]; j++) {
+        // for (var k = 0, inp; inp =col.items(k); k++) {
+        //   append = var inp.value;
+          var append = col.firstChild.value;
+          addrArray.push(append);
+        }
+      }
+    // }
+    document.getElementById('show_array').innerHTML = addrArray.toString();
+    // return addrArray;
+  }
+
+  function showMap() {
+    // This is for displaying the map on html
+    var map = new google.maps.Map(document.getElementById('googleMap'),{
+      zoom: 7,
+      center: {lng:-80.1289, lat: 26.3683}
+    });
+    // This is the instantiation of the Geocoder object
+    var geocoder = new google.maps.Geocoder();
+
+    // addEventListener uses "click" as a key, for when an html element is clicked
+    document.getElementById('submit').addEventListener('click', function() {
+      // When clicked, geocodeAddress is called with the geocoder variable and the display map
+      geocodeAddress(geocoder, map);
+    });
+  }
+
+  function geocodeAddress(geocoder, resultsMap) {
+    // Grab the html value for id='address'
+    var address = document.getElementById('address').value;
+    // {'adress': address} is the GeocoderRequest variable
+    // google takes the geocoder reuest and status and uses it for the function
+    geocoder.geocode({'address': address}, function(results, status) {
+      if (status == "OK") {
+        resultsMap.setCenter(results[0].geometry.location);
+        var marker = new google.maps.Marker({
+          map: resultsMap,
+          position: results[0].geometry.location
+        });
+      } else {
+        alert("Geocode was not successful for the following reason " + status);
+      }
+    });
+  }
 </script>
 
+<!-- <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAYRrbU6ZFTgq7E_WCkRhDjxU0JueH38mg&callback=showMap"></script> -->
 
 </body>
-
-{% endblock %}
+</html>
